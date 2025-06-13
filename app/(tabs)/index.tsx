@@ -1,75 +1,197 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import {
+  Dimensions,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import SettingsScreen from '../screens/AlarmNotifi';
+import CounterScreen from '../screens/Screen2';
+import WelcomeScreen from '../screens/Screen3';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+interface SidebarButton {
+  id: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
 }
 
+interface SidebarProps {
+  currentScreen: string;
+  setCurrentScreen: (screen: string) => void;
+}
+
+const { width, height } = Dimensions.get('window');
+const SIDEBAR_WIDTH = width * 0.2;
+
+const Sidebar: React.FC<SidebarProps> = ({ currentScreen, setCurrentScreen }) => {
+  const buttons: SidebarButton[] = [
+    { id: 'WelcomeScreen', icon: 'home-outline', label: 'Inicio' },
+    { id: 'CounterScreen', icon: 'calculator-outline', label: 'Contador' },
+    { id: 'SettingsScreen', icon: 'settings-outline', label: 'Config' },
+  ];
+
+  return (
+    <View style={styles.sidebar}>
+      <View style={styles.brandContainer}>
+        <View style={styles.brandIcon}>
+          <Text style={styles.brandText}>A</Text>
+        </View>
+      </View>
+      
+      <View style={styles.buttonContainer}>
+        {buttons.map((button) => {
+          const isActive = currentScreen === button.id;
+          
+          return (
+            <TouchableOpacity
+              key={button.id}
+              style={[
+                styles.button,
+                isActive && styles.activeButton
+              ]}
+              onPress={() => setCurrentScreen(button.id)}
+            >
+              <Ionicons 
+                name={button.icon} 
+                size={22} 
+                color={isActive ? '#fff' : '#B0B7C3'} 
+              />
+              <Text style={[
+                styles.buttonText,
+                isActive && styles.activeButtonText
+              ]}>
+                {button.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+      
+      <View style={styles.helpContainer}>
+        <TouchableOpacity style={styles.helpButton}>
+          <Ionicons name="help-outline" size={18} color="#B0B7C3" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+const App = () => {
+  const [currentScreen, setCurrentScreen] = useState('WelcomeScreen');
+
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'WelcomeScreen':
+        return <WelcomeScreen />;
+      case 'CounterScreen':
+        return <CounterScreen />;
+      case 'SettingsScreen':
+        return <SettingsScreen />;
+      default:
+        return <WelcomeScreen />;
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.appContainer}>
+        <Sidebar currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} />
+        <View style={styles.content}>
+          {renderScreen()}
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+};
+
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  appContainer: {
+    flex: 1,
     flexDirection: 'row',
+  },
+  sidebar: {
+    width: SIDEBAR_WIDTH,
+    backgroundColor: '#1F2937',
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  brandContainer: {
     alignItems: 'center',
-    gap: 8,
+    marginBottom: 30,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  brandIcon: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#3B82F6',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  brandText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  buttonContainer: {
+    flex: 1,
+  },
+  button: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: 70,
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    marginVertical: 8,
+    paddingVertical: 8,
+  },
+  activeButton: {
+    backgroundColor: '#3B82F6',
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  buttonText: {
+    color: '#B0B7C3',
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 6,
+    textAlign: 'center',
+  },
+  activeButtonText: {
+    color: '#fff',
+  },
+  helpContainer: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  helpButton: {
+    width: 32,
+    height: 32,
+    backgroundColor: '#374151',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
   },
 });
+
+export default App;
